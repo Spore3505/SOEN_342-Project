@@ -1,0 +1,322 @@
+@startuml
+title Appointment Tracking System - UML Domain Model
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam linetype polyline
+skinparam nodesep 45
+skinparam ranksep 65
+
+hide methods
+hide circle
+
+' ============================
+' PATIENT INFORMATION
+' ============================
+
+class Patient {
+  patientID : String
+  firstName : String
+  lastName : String
+  dateOfBirth : Date
+  phoneNumber : String
+}
+
+class InsuranceCoverage {
+  insuranceNumber : String
+  type : String
+}
+
+' ============================
+' HEALTHCARE PROFESSIONALS
+' ============================
+
+abstract class HealthcareProfessional {
+  professionalID : String
+  name : String
+  professionalInformation : String
+}
+
+class FamilyPhysician
+class SpecialistPhysician
+class Nurse
+class OtherHealthcareProfessional
+
+class MedicalSpecialty {
+  name : String
+}
+
+class ClinicLocation {
+  locationID : String
+  address : String
+}
+
+class MedicalService {
+  serviceID : String
+  name : String
+  requiresReferral : Boolean
+}
+
+class ProfessionalSchedule {
+  scheduleID : String
+  startDateTime : DateTime
+  endDateTime : DateTime
+}
+
+' ============================
+' APPOINTMENTS
+' ============================
+
+class Appointment {
+  appointmentID : String
+  dateTime : DateTime
+  status : String
+}
+
+class PatientArrival {
+  arrivalDateTime : DateTime
+}
+
+' ============================
+' CONSULTATIONS
+' ============================
+
+class Consultation {
+  consultationID : String
+  dateTime : DateTime
+}
+
+class ClinicalRecord {
+  recordID : String
+  observations : String
+  diagnoses : String
+  treatmentRecommendations : String
+  followUpRequirements : String
+}
+
+' ============================
+' REFERRALS
+' ============================
+
+class Referral {
+  referralID : String
+  clinicalReason : String
+  priority : String
+  status : String
+}
+
+' ============================
+' PRESCRIPTIONS
+' ============================
+
+class Prescription {
+  prescriptionID : String
+  issueDate : Date
+}
+
+class PrescriptionItem {
+  dosageInstructions : String
+}
+
+class Medication {
+  medicationID : String
+  name : String
+}
+
+' ============================
+' BILLING
+' ============================
+
+class ServiceFee {
+  amount : Money
+}
+
+class Invoice {
+  invoiceID : String
+  issueDate : Date
+  amount : Money
+}
+
+class Payment {
+  paymentID : String
+  date : Date
+  amount : Money
+}
+
+' ============================
+' ADMINISTRATIVE INFORMATION
+' ============================
+
+class AdministrativeStaff {
+  staffID : String
+  name : String
+}
+
+class ActivityRecord {
+  activityID : String
+  dateTime : DateTime
+  description : String
+}
+
+' ============================
+' GENERALIZATION
+' ============================
+
+HealthcareProfessional <|-- FamilyPhysician
+HealthcareProfessional <|-- SpecialistPhysician
+HealthcareProfessional <|-- Nurse
+HealthcareProfessional <|-- OtherHealthcareProfessional
+
+' ============================
+' PATIENT ASSOCIATIONS
+' ============================
+
+Patient "1" -- "0..*" InsuranceCoverage : Has
+
+Patient "1" -- "0..*" Appointment : Has
+
+Patient "1" -- "0..*" ClinicalRecord : Has
+
+Patient "1" -- "0..*" Referral : Is-subject-of
+
+' ============================
+' PROFESSIONAL ASSOCIATIONS
+' ============================
+
+HealthcareProfessional "0..*" -- "0..*" ClinicLocation : Practises-at
+
+HealthcareProfessional "0..*" -- "0..*" MedicalSpecialty : Has-specialty
+
+HealthcareProfessional "1" -- "0..*" ProfessionalSchedule : Has
+
+ClinicLocation "1" -- "0..*" ProfessionalSchedule : Applies-at
+
+ClinicLocation "0..*" -- "0..*" MedicalService : Offers
+
+' ============================
+' APPOINTMENT ASSOCIATIONS
+' ============================
+
+HealthcareProfessional "1" -- "0..*" Appointment : Is-assigned-to
+
+ClinicLocation "1" -- "0..*" Appointment : Hosts
+
+MedicalService "1" -- "0..*" Appointment : Is-requested-in
+
+Appointment "1" -- "0..1" PatientArrival : Has
+
+AdministrativeStaff "0..1" -- "0..*" PatientArrival : Registers
+
+Appointment "1" -- "0..1" Consultation : Results-in
+
+HealthcareProfessional "1" -- "0..*" Consultation : Conducts
+
+' ============================
+' CONSULTATION ASSOCIATIONS
+' ============================
+
+Consultation "1" -- "0..*" ClinicalRecord : Documents
+
+Consultation "1" -- "0..*" Prescription : Produces
+
+' ============================
+' REFERRAL ASSOCIATIONS
+' ============================
+
+HealthcareProfessional "1" -- "0..*" Referral : Issues
+
+MedicalSpecialty "0..1" -- "0..*" Referral : Requests-specialty
+
+HealthcareProfessional "0..1" -- "0..*" Referral : Requests-professional
+
+Referral "0..1" -- "0..*" Appointment : Supports
+
+' ============================
+' PRESCRIPTION ASSOCIATIONS
+' ============================
+
+Prescription "1" -- "1..*" PrescriptionItem : Contains
+
+Medication "1" -- "0..*" PrescriptionItem : Identifies
+
+' ============================
+' BILLING ASSOCIATIONS
+' ============================
+
+Patient "1" -- "0..*" Invoice : Receives
+
+MedicalService "1" -- "0..*" ServiceFee : Has-applicable-fee
+
+Invoice "0..*" -- "1..*" ServiceFee : Includes
+
+Invoice "1" -- "0..*" Payment : Receives
+
+' ============================
+' ACTIVITY RECORDING
+' ============================
+
+AdministrativeStaff "0..1" -- "0..*" ActivityRecord : Performs
+
+HealthcareProfessional "0..1" -- "0..*" ActivityRecord : Performs
+
+' ============================
+' CONSTRAINTS
+' ============================
+
+note right of Patient
+  patientID is unique.
+  Insurance coverage is optional.
+end note
+
+note right of HealthcareProfessional
+  Referring professionals may be
+  external and may not practise
+  at a clinic location.
+end note
+
+note right of MedicalService
+  A service may require a referral.
+  Uninsured services may have
+  applicable fees.
+end note
+
+note right of Appointment
+  Booking must satisfy professional
+  availability and scheduling rules.
+
+  A valid referral is required
+  when the service requires one.
+end note
+
+note right of Referral
+  A referral identifies the referring
+  professional, clinical reason,
+  priority, and status.
+
+  At least one requested specialty
+  or professional is specified.
+
+  A referral may result in
+  multiple appointments.
+end note
+
+note right of Invoice
+  Invoices are generated for
+  uninsured services.
+
+  Exact fee grouping is not
+  specified in the requirements.
+end note
+
+note right of ActivityRecord
+  Relevant activities are recorded
+  for accountability.
+
+  Information access depends
+  on the user's role.
+end note
+
+@enduml
+
