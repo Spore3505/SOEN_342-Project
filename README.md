@@ -24,9 +24,13 @@ consultations, referrals, prescriptions, and billing.
 - UC2: Conduct Consultation
 - UC3: Issue Referral
 
+
 ## Submission
+
 The complete Iteration 1 report is available at:
-[Iteration 1 Report](iteration-1/SOEN342_Iteration1_Final.pdf)
+
+[Iteration 1 Report](artifacts/SOEN342_Iteration1_Final.pdf)
+
 
 ## Tools
 - PlantUML for UML diagrams
