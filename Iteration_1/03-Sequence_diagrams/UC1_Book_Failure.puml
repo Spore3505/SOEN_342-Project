@@ -1,0 +1,28 @@
+@startuml
+title UC1 - Book Appointment (Failure Scenario)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+actor "Authorized Clinic Staff" as Staff
+participant "Appointment Tracking System" as System
+
+Staff -> System: searchPatient(searchCriteria)
+System --> Staff: patientInformation
+
+Staff -> System: checkAppointmentAvailability(\npatientID, professionalID, locationID,\nserviceID, requestedDateTime)
+
+System --> Staff: professionalUnavailable
+
+Staff -> System: bookAppointment(\npatientID, professionalID, locationID,\nserviceID, requestedDateTime)
+
+System --> Staff: bookingRejected,\nprofessionalUnavailable
+
+note right of System
+  No Appointment instance
+  is created.
+end note
+
+@enduml
