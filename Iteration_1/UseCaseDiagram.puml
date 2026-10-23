@@ -1,0 +1,106 @@
+@startuml
+title Appointment Tracking System - Use-Case Diagram
+
+left to right direction
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam linetype ortho
+
+actor Patient as Patient
+actor "Authorized Clinic Staff" as Staff
+actor "Administrative Staff" as Admin
+actor "Healthcare Professional" as HCP
+actor "Family Physician" as Family
+actor "Specialist Physician" as Specialist
+actor Nurse as Nurse
+actor "Other Healthcare Professional" as Other
+
+Staff <|-- Admin
+Staff <|-- HCP
+HCP <|-- Family
+HCP <|-- Specialist
+HCP <|-- Nurse
+HCP <|-- Other
+
+rectangle "Appointment Tracking System" {
+
+  usecase "Request Appointment" as Request
+  usecase "Book Appointment" as Book
+  usecase "Confirm Appointment" as Confirm
+  usecase "Reschedule Appointment" as Reschedule
+  usecase "Cancel Appointment" as Cancel
+  usecase "Register Patient Arrival" as Arrival
+
+  usecase "Maintain Patient Information" as PatientInfo
+  usecase "Search for Patient" as SearchPatient
+  usecase "Maintain Professional and\nClinic Information" as MaintainInfo
+  usecase "Manage Professional Schedule" as Schedule
+
+  usecase "Conduct Consultation" as Consult
+  usecase "Record Clinical Information" as Clinical
+  usecase "Review Clinical Records" as Review
+  usecase "Issue Prescription" as Prescription
+  usecase "Issue Referral" as Referral
+  usecase "Request Follow-up Appointment" as FollowUp
+
+  usecase "Record Service Fees" as Fees
+  usecase "Generate Invoice" as Invoice
+  usecase "Register Payment" as Payment
+}
+
+Patient -- Request
+Staff -- Request
+Staff -- Book
+
+Admin -- Confirm
+Admin -- Reschedule
+Admin -- Cancel
+Admin -- Arrival
+Admin -- PatientInfo
+Admin -- SearchPatient
+Admin -- Invoice
+Admin -- Payment
+
+HCP -- Schedule
+HCP -- Consult
+HCP -- Review
+HCP -- Prescription
+HCP -- Referral
+HCP -- FollowUp
+
+Consult ..> Clinical : <<include>>
+Prescription ..> Consult : <<extend>>
+FollowUp ..> Consult : <<extend>>
+
+note right of Book
+  CRITICAL UC1
+  Availability and scheduling
+  constraints must be checked.
+  Referral rules apply when required.
+end note
+
+note right of Consult
+  CRITICAL UC2
+end note
+
+note right of Referral
+  CRITICAL UC3
+end note
+
+legend bottom
+  CRITICAL USE CASES
+  UC1: Book Appointment
+  UC2: Conduct Consultation
+  UC3: Issue Referral
+
+  Other use cases are non-critical
+  for detailed Iteration 1 analysis.
+
+  Patient direct CLI access and
+  maintenance permissions are unspecified.
+endlegend
+
+@enduml
+
+
