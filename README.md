@@ -29,7 +29,7 @@ consultations, referrals, prescriptions, and billing.
 
 The complete Iteration 1 report is available at:
 
-[Iteration 1 Report](artifacts/SOEN342_Iteration1_Final.pdf)
+[Iteration 1 Report](Iteration_1/SOEN342_Iteration1_Final.pdf)
 
 
 ## Tools
