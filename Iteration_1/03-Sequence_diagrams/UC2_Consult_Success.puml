@@ -1,0 +1,29 @@
+@startuml
+title UC2 - Conduct Consultation (Success Scenario)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+actor "Healthcare Professional" as HP
+participant "Appointment Tracking System" as System
+
+HP -> System: getAppointmentDetails(appointmentID)
+System --> HP: appointmentDetails, patientInformation
+
+HP -> System: startConsultation(appointmentID)
+System --> HP: consultationID
+
+note over HP
+  Healthcare professional
+  conducts the consultation.
+end note
+
+HP -> System: recordClinicalInformation(\nconsultationID, observations, diagnoses,\ntreatmentRecommendations, followUpRequirements)
+
+System --> HP: clinicalRecordSaved
+
+@enduml
+
+

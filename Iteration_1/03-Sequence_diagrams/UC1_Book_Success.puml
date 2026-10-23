@@ -1,0 +1,23 @@
+@startuml
+title UC1 - Book Appointment (Success Scenario)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+actor "Authorized Clinic Staff" as Staff
+participant "Appointment Tracking System" as System
+
+Staff -> System: searchPatient(searchCriteria)
+System --> Staff: patientInformation
+
+Staff -> System: checkAppointmentAvailability(\npatientID, professionalID, locationID,\nserviceID, requestedDateTime)
+
+System --> Staff: availabilityConfirmed,\nreferralRequirementsSatisfied
+
+Staff -> System: bookAppointment(\npatientID, professionalID, locationID,\nserviceID, requestedDateTime)
+
+System --> Staff: appointmentID, bookingConfirmation
+
+@enduml
