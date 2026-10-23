@@ -1,0 +1,30 @@
+@startuml
+title UC2 - Conduct Consultation (Failure Scenario)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+actor "Administrative Staff" as Admin
+participant "Appointment Tracking System" as System
+
+Admin -> System: getAppointmentDetails(appointmentID)
+System --> Admin: appointmentDetails
+
+Admin -> System: recordClinicalInformation(\nconsultationID, observations, diagnoses,\ntreatmentRecommendations, followUpRequirements)
+
+System --> Admin: accessDenied,\ninsufficientPermissions
+
+note right of System
+  Administrative staff are not
+  authorized to modify
+  clinical information.
+
+  No ClinicalRecord is
+  created or modified.
+end note
+
+@enduml
+
+
