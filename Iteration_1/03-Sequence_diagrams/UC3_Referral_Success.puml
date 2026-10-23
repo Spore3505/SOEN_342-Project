@@ -1,0 +1,28 @@
+@startuml
+title UC3 - Issue Referral (Success Scenario)
+
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+actor "Healthcare Professional" as HP
+participant "Appointment Tracking System" as System
+
+HP -> System: searchPatient(searchCriteria)
+System --> HP: patientInformation
+
+HP -> System: issueReferral(\npatientID, referringProfessionalID,\nrequestedSpecialtyID, requestedProfessionalID,\nclinicalReason, priority)
+
+System --> HP: referralID, referralStatus,\nreferralConfirmation
+
+note right of System
+  A Referral instance is created
+  and associated with the patient
+  and referring professional.
+
+  The requested specialty and/or
+  professional is recorded.
+end note
+
+@enduml
