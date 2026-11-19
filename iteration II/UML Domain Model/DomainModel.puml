@@ -1,1 +1,309 @@
+@startuml
+title Appointment Tracking System - Domain Model 
+top to bottom direction
 
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 55
+skinparam packageStyle rectangle
+skinparam packageTitleAlignment center
+skinparam ArrowFontSize 9
+
+hide methods
+hide circle
+
+' ==========================================
+' 01 - PATIENTS AND PROFESSIONALS
+' ==========================================
+
+package "01 - Patients and Professionals" {
+
+  class Patient {
+    patientID : String
+    firstName : String
+    lastName : String
+    dateOfBirth : Date
+    phoneNumber : String
+  }
+
+  class InsuranceCoverage {
+    insuranceNumber : String
+    type : String
+  }
+
+  abstract class HealthcareProfessional {
+    professionalID : String
+    name : String
+    professionalInformation : String
+  }
+
+  class FamilyPhysician
+  class SpecialistPhysician
+  class Nurse
+  class OtherHealthcareProfessional
+
+  class MedicalSpecialty {
+    name : String
+  }
+
+  class AdministrativeStaff {
+    staffID : String
+    name : String
+  }
+
+  Patient "1" -- "0..*" InsuranceCoverage : has
+
+  HealthcareProfessional <|-- FamilyPhysician
+  HealthcareProfessional <|-- SpecialistPhysician
+  HealthcareProfessional <|-- Nurse
+  HealthcareProfessional <|-- OtherHealthcareProfessional
+
+  HealthcareProfessional "0..*" -- "0..*" MedicalSpecialty : specializes
+}
+
+' ==========================================
+' 02 - APPOINTMENTS AND SCHEDULING
+' ==========================================
+
+package "02 - Appointments and Scheduling" {
+
+  class ClinicLocation {
+    locationID : String
+    address : String
+  }
+
+  class MedicalService {
+    serviceID : String
+    name : String
+    requiresReferral : Boolean
+  }
+
+  class ProfessionalSchedule {
+    scheduleID : String
+    startDateTime : DateTime
+    endDateTime : DateTime
+  }
+
+  class Appointment {
+    appointmentID : String
+    dateTime : DateTime
+    status : String
+  }
+
+  class PatientArrival {
+    arrivalDateTime : DateTime
+  }
+
+  ClinicLocation "1" -- "0..*" ProfessionalSchedule : applies at
+  ClinicLocation "0..*" -- "0..*" MedicalService : offers
+  Appointment "1" -- "0..1" PatientArrival : arrival
+}
+
+' ==========================================
+' 03 - WAITLIST MANAGEMENT
+' ==========================================
+
+package "03 - Waitlist Management" {
+
+  class WaitlistEntry {
+    entryID : String
+    requestedStartDate : Date
+    requestedEndDate : Date
+    priority : Integer
+    status : String
+  }
+
+  class AppointmentOffer {
+    offerID : String
+    offeredDateTime : DateTime
+    outcome : String
+  }
+
+  WaitlistEntry "1" -- "0..*" AppointmentOffer : receives
+}
+
+' ==========================================
+' 04 - RESOURCE ALLOCATION
+' ==========================================
+
+package "04 - Resource Allocation" {
+
+  class Resource {
+    resourceID : String
+    name : String
+    resourceType : String
+    roleName : String
+  }
+
+  class ResourceRequirement {
+    quantity : Integer
+  }
+
+  class ResourceAllocation {
+    allocationID : String
+    startDateTime : DateTime
+    endDateTime : DateTime
+    quantity : Integer
+  }
+
+  Resource "1" -- "0..*" ResourceRequirement : required type
+  Resource "1" -- "0..*" ResourceAllocation : allocated
+}
+
+' ==========================================
+' 05 - CLINICAL CARE
+' ==========================================
+
+package "05 - Clinical Care" {
+
+  class Consultation {
+    consultationID : String
+    dateTime : DateTime
+  }
+
+  class ClinicalRecord {
+    recordID : String
+    observations : String
+    diagnoses : String
+    treatmentRecommendations : String
+    followUpRequirements : String
+  }
+
+  class Referral {
+    referralID : String
+    clinicalReason : String
+    priority : String
+    status : String
+  }
+
+  class Prescription {
+    prescriptionID : String
+    issueDate : Date
+  }
+
+  class PrescriptionItem {
+    dosageInstructions : String
+  }
+
+  class Medication {
+    medicationID : String
+    name : String
+  }
+
+  Consultation "1" -- "0..*" ClinicalRecord : documents
+  Consultation "1" -- "0..*" Prescription : produces
+
+  Prescription "1" -down- "1..*" PrescriptionItem : contains
+  Medication "1" -left- "0..*" PrescriptionItem : identifies
+
+  ' Layout-only link: keeps Medication close to Prescription
+  Medication -[hidden]left- Prescription
+}
+
+' ==========================================
+' 06 - BILLING AND AUDIT
+' ==========================================
+
+package "06 - Billing and Audit" {
+
+  class ServiceFee {
+    amount : Money
+  }
+
+  class Invoice {
+    invoiceID : String
+    issueDate : Date
+    amount : Money
+  }
+
+  class Payment {
+    paymentID : String
+    date : Date
+    amount : Money
+  }
+
+  class ActivityRecord {
+    activityID : String
+    dateTime : DateTime
+    description : String
+  }
+
+  Invoice "1" -- "0..*" Payment : receives
+  Invoice "0..*" -- "1..*" ServiceFee : includes
+}
+
+' ==========================================
+' CORE APPOINTMENT RELATIONSHIPS
+' ==========================================
+
+Patient "1" -- "0..*" Appointment : books
+HealthcareProfessional "1" -- "0..*" Appointment : assigned
+ClinicLocation "1" -- "0..*" Appointment : hosts
+MedicalService "1" -- "0..*" Appointment : service
+
+HealthcareProfessional "0..*" -- "0..*" ClinicLocation : practises
+HealthcareProfessional "1" -- "0..*" ProfessionalSchedule : has
+
+AdministrativeStaff "0..1" -- "0..*" PatientArrival : registers
+
+' ==========================================
+' WAITLIST RELATIONSHIPS
+' ==========================================
+
+Patient "1" -- "0..*" WaitlistEntry : requests
+
+HealthcareProfessional "0..1" -- "0..*" WaitlistEntry : preferred professional
+
+MedicalSpecialty "0..1" -- "0..*" WaitlistEntry : preferred specialty
+
+AdministrativeStaff "0..1" -- "0..*" WaitlistEntry : manages priority
+
+AdministrativeStaff "0..1" -- "0..*" AppointmentOffer : phones
+
+Appointment "0..1" -- "0..*" AppointmentOffer : offered slot
+
+' ==========================================
+' RESOURCE RELATIONSHIPS
+' ==========================================
+
+MedicalService "1" -- "0..*" ResourceRequirement : requires
+
+Appointment "1" -- "0..*" ResourceAllocation : uses
+
+' ==========================================
+' CLINICAL RELATIONSHIPS
+' ==========================================
+
+Appointment "1" -- "0..1" Consultation : results in
+
+HealthcareProfessional "1" -- "0..*" Consultation : conducts
+
+Patient "1" -- "0..*" ClinicalRecord : has
+
+Patient "1" -- "0..*" Referral : subject of
+
+HealthcareProfessional "1" -- "0..*" Referral : issues
+
+MedicalSpecialty "0..1" -- "0..*" Referral : requested specialty
+
+HealthcareProfessional "0..1" -- "0..*" Referral : requested professional
+
+Referral "0..1" -- "0..*" Appointment : supports
+
+' ==========================================
+' BILLING AND AUDIT RELATIONSHIPS
+' ==========================================
+
+Patient "1" -- "0..*" Invoice : receives
+
+MedicalService "1" -- "0..*" ServiceFee : applicable fee
+
+AdministrativeStaff "0..1" -- "0..*" ActivityRecord : performs
+
+HealthcareProfessional "0..1" -- "0..*" ActivityRecord : performs
+
+@enduml
