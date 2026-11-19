@@ -1,1 +1,252 @@
+@startuml
+title Appointment Tracking System - Partial Design Class Diagram 
 
+top to bottom direction
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam classAttributeIconSize 0
+skinparam linetype polyline
+skinparam nodesep 40
+skinparam ranksep 55
+skinparam packageStyle rectangle
+
+hide circle
+
+' =====================================
+' APPOINTMENT MANAGEMENT
+' =====================================
+
+package "Appointment Management" {
+
+  class Patient <<entity>> {
+    -patientID : String
+    -firstName : String
+    -lastName : String
+    -dateOfBirth : Date
+    -phoneNumber : String
+  }
+
+  class HealthcareProfessional <<entity>> {
+    -professionalID : String
+    -name : String
+    -professionalInformation : String
+  }
+
+  class MedicalSpecialty <<entity>> {
+    -name : String
+  }
+
+  class ClinicLocation <<entity>> {
+    -locationID : String
+    -address : String
+  }
+
+  class MedicalService <<entity>> {
+    -serviceID : String
+    -name : String
+    -requiresReferral : Boolean
+  }
+
+  class ProfessionalSchedule <<entity>> {
+    -scheduleID : String
+    -startDateTime : DateTime
+    -endDateTime : DateTime
+    +isAvailable(start : DateTime, end : DateTime) : Boolean
+  }
+
+  class Appointment <<entity>> {
+    -appointmentID : String
+    -dateTime : DateTime
+    -status : String
+    -arrivalDateTime : DateTime
+    +confirm() : void
+    +cancel() : void
+    +reschedule(newDateTime : DateTime) : void
+  }
+
+  class AppointmentService <<control>> {
+    +searchPatient() : List
+    +checkAvailability() : Boolean
+    +bookAppointment() : Appointment
+    +cancelAppointment() : void
+    +rescheduleAppointment() : Boolean
+    +registerArrival() : void
+  }
+
+  Patient "1" -- "0..*" Appointment : books
+  HealthcareProfessional "1" -- "0..*" Appointment : assigned
+  ClinicLocation "1" -- "0..*" Appointment : hosts
+  MedicalService "1" -- "0..*" Appointment : service
+
+  HealthcareProfessional "1" -- "0..*" ProfessionalSchedule : has
+  HealthcareProfessional "0..*" -- "0..*" ClinicLocation : practises at
+  HealthcareProfessional "0..*" -- "0..*" MedicalSpecialty : specializes in
+
+  AppointmentService ..> Appointment : manages
+}
+
+' =====================================
+' WAITLIST MANAGEMENT
+' =====================================
+
+package "Waitlist Management" {
+
+  class WaitlistEntry <<entity>> {
+    -entryID : String
+    -requestedStartDate : Date
+    -requestedEndDate : Date
+    -priority : Integer
+    -status : String
+    +changePriority(priority : Integer) : void
+    +remove() : void
+  }
+
+  class AppointmentOffer <<entity>> {
+    -offerID : String
+    -offeredDateTime : DateTime
+    -outcome : String
+    +accept() : void
+    +decline() : void
+  }
+
+  class WaitlistService <<control>> {
+    +addToWaitlist() : WaitlistEntry
+    +findEligibleEntries() : List
+    +changePriority() : void
+    +recordPhoneOffer() : AppointmentOffer
+    +recordOfferOutcome() : void
+    +removeEntry() : void
+  }
+
+  WaitlistEntry "1" -- "0..*" AppointmentOffer : receives
+
+  WaitlistService ..> WaitlistEntry : manages
+  WaitlistService ..> AppointmentOffer : creates
+}
+
+' =====================================
+' RESOURCE MANAGEMENT
+' =====================================
+
+package "Resource Management" {
+
+  class Resource <<entity>> {
+    -resourceID : String
+    -name : String
+    -resourceType : String
+    -roleName : String
+  }
+
+  class ResourceRequirement <<entity>> {
+    -quantity : Integer
+  }
+
+  class ResourceAllocation <<entity>> {
+    -allocationID : String
+    -startDateTime : DateTime
+    -endDateTime : DateTime
+    -quantity : Integer
+  }
+
+  class ResourceAllocationService <<control>> {
+    +checkRequiredResources() : Boolean
+    +checkResourceAvailability() : Boolean
+    +allocateResources() : List
+    +releaseResources() : void
+  }
+
+  Resource "1" -- "0..*" ResourceRequirement : required type
+  Resource "1" -- "0..*" ResourceAllocation : allocated
+
+  ResourceAllocationService ..> ResourceAllocation : manages
+}
+
+' =====================================
+' CLINICAL MANAGEMENT
+' =====================================
+
+package "Clinical Management" {
+
+  class Consultation <<entity>> {
+    -consultationID : String
+    -dateTime : DateTime
+  }
+
+  class ClinicalRecord <<entity>> {
+    -recordID : String
+    -observations : String
+    -diagnoses : String
+    -treatmentRecommendations : String
+    -followUpRequirements : String
+  }
+
+  class Referral <<entity>> {
+    -referralID : String
+    -clinicalReason : String
+    -priority : String
+    -status : String
+  }
+
+  class ConsultationService <<control>> {
+    +startConsultation() : Consultation
+    +recordClinicalInformation() : ClinicalRecord
+  }
+
+  class ReferralService <<control>> {
+    +issueReferral() : Referral
+  }
+
+  Consultation "1" -- "0..*" ClinicalRecord : records
+
+  ConsultationService ..> Consultation : manages
+  ReferralService ..> Referral : creates
+}
+
+' =====================================
+' ESSENTIAL CROSS-PACKAGE RELATIONSHIPS
+' =====================================
+
+Patient "1" -- "0..*" WaitlistEntry : requests
+
+HealthcareProfessional "0..1" -- "0..*" WaitlistEntry : preferred professional
+MedicalSpecialty "0..1" -- "0..*" WaitlistEntry : preferred specialty
+
+Appointment "0..1" -- "0..*" AppointmentOffer : offered slot
+
+MedicalService "1" -- "0..*" ResourceRequirement : requires
+Appointment "1" -- "0..*" ResourceAllocation : uses
+
+Appointment "1" -- "0..1" Consultation : results in
+
+Patient "1" -- "0..*" Referral : subject of
+HealthcareProfessional "1" -- "0..*" Referral : issued by
+MedicalSpecialty "0..1" -- "0..*" Referral : requested specialty
+HealthcareProfessional "0..1" -- "0..*" Referral : requested professional
+
+Referral "0..1" -- "0..*" Appointment : supports
+
+' =====================================
+' CONTROL COLLABORATIONS
+' =====================================
+
+AppointmentService ..> WaitlistService : cancellation notification
+AppointmentService ..> ResourceAllocationService : resource validation
+
+' =====================================
+' REQUIREMENT NOTES
+' =====================================
+
+note bottom of AppointmentOffer
+  Offers are made by phone.
+  Acceptance may lead to booking.
+  Declining does not create a booking.
+end note
+
+note bottom of Resource
+  Human resources represent roles,
+  not individual personnel.
+end note
+
+@enduml
