@@ -1,0 +1,5 @@
+professional_id,date,start,end,status
+D001,2026-11-24,09:00,09:30,Booked
+D001,2026-11-24,09:30,10:00,Available
+D002,2026-11-25,10:00,10:30,Available
+D002,2026-11-25,10:30,11:00,Available
